@@ -21,6 +21,8 @@ import {
     Truck,
     Calendar,
     Syringe,
+    FlaskConical,
+    Layers,
 } from 'lucide-react'
 import { useState } from 'react'
 
@@ -31,6 +33,8 @@ const mobileNavItems = [
     { label: 'Batches', href: '/batches/new', icon: Truck },
     { label: 'Events', href: '/events', icon: Calendar },
     { label: 'Dispense', href: '/dispense', icon: Syringe },
+    { label: 'Molecules', href: '/molecules', icon: FlaskConical },
+    { label: 'Categories', href: '/categories', icon: Layers },
 ]
 
 const pageTitles = {
@@ -43,6 +47,8 @@ const pageTitles = {
     '/events': 'Events',
     '/events/new': 'New Event',
     '/dispense': 'Dispense',
+    '/molecules': 'Molecules',
+    '/categories': 'Categories',
     '/auth/login': 'Login',
 }
 

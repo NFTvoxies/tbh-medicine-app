@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
     Table,
@@ -13,7 +12,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table'
-import { Plus, Calendar } from 'lucide-react'
+import { Plus, Calendar, ChevronRight } from 'lucide-react'
 import Link from 'next/link'
 import { formatDate } from '@/lib/types'
 
@@ -74,12 +73,17 @@ export default function EventsPage() {
                                         <TableHead className="text-xs">Date</TableHead>
                                         <TableHead className="text-xs">Location</TableHead>
                                         <TableHead className="text-xs">Notes</TableHead>
+                                        <TableHead className="text-xs w-8" />
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
                                     {events.map((e) => (
-                                        <TableRow key={e.id} className="hover:bg-secondary/20">
-                                            <TableCell className="font-medium text-sm">
+                                        <TableRow
+                                            key={e.id}
+                                            className="hover:bg-secondary/20 cursor-pointer group"
+                                            onClick={() => window.location.href = `/events/${e.id}`}
+                                        >
+                                            <TableCell className="font-medium text-sm text-primary group-hover:underline">
                                                 {e.name}
                                             </TableCell>
                                             <TableCell className="text-sm">
@@ -90,6 +94,9 @@ export default function EventsPage() {
                                             </TableCell>
                                             <TableCell className="text-xs text-muted-foreground max-w-[200px] truncate">
                                                 {e.notes || '—'}
+                                            </TableCell>
+                                            <TableCell className="text-muted-foreground text-xs">
+                                                <ChevronRight className="w-4 h-4" />
                                             </TableCell>
                                         </TableRow>
                                     ))}

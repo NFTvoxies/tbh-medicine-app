@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/select'
 import { ArrowLeft, Plus, Trash2, Loader2 } from 'lucide-react'
 import Link from 'next/link'
+import { DatePicker } from '@/components/ui/date-picker'
 
 const donationFormSchema = z.object({
     donor_name: z.string().min(1, 'Donor name is required'),
@@ -46,6 +47,7 @@ export default function NewDonationPage() {
         handleSubmit,
         control,
         setValue,
+        watch,
         formState: { errors },
     } = useForm({
         resolver: zodResolver(donationFormSchema),
@@ -139,12 +141,12 @@ export default function NewDonationPage() {
                                 )}
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="received_date">Received Date</Label>
-                                <Input
-                                    id="received_date"
-                                    type="date"
-                                    {...register('received_date')}
-                                    className="bg-secondary/50"
+                                <Label>Received Date</Label>
+                                <DatePicker
+                                    value={watch('received_date') || null}
+                                    onChange={(val) => setValue('received_date', val || '')}
+                                    placeholder="Select received date"
+                                    clearable={false}
                                 />
                             </div>
                         </div>
@@ -244,10 +246,12 @@ export default function NewDonationPage() {
                                     </div>
                                     <div className="space-y-1.5">
                                         <Label className="text-xs">Expiration Date</Label>
-                                        <Input
-                                            type="date"
-                                            {...register(`batches.${index}.expiration_date`)}
-                                            className="bg-secondary/50"
+                                        <DatePicker
+                                            value={watch(`batches.${index}.expiration_date`) || null}
+                                            onChange={(val) => setValue(`batches.${index}.expiration_date`, val || '')}
+                                            placeholder="Select expiry"
+                                            fromYear={new Date().getFullYear()}
+                                            toYear={new Date().getFullYear() + 15}
                                         />
                                     </div>
 

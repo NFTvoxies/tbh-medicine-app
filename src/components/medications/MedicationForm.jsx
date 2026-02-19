@@ -7,13 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select'
+import { SearchableSelect } from '@/components/ui/searchable-select'
 import { Loader2 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
@@ -53,6 +47,14 @@ export default function MedicationForm({ onSubmit, defaultValues, loading }) {
         loadData()
     }, [])
 
+    // Build option lists
+    const moleculeOptions = molecules.map((m) => ({ value: m.id, label: m.name }))
+    const categoryOptions = categories.map((c) => ({
+        value: c.id,
+        label: `${'—'.repeat((c.level || 1) - 1)}${(c.level || 1) > 1 ? ' ' : ''}${c.name}`,
+    }))
+    const formOptions = MEDICATION_FORMS.map((f) => ({ value: f, label: f }))
+
     return (
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -88,66 +90,48 @@ export default function MedicationForm({ onSubmit, defaultValues, loading }) {
                     )}
                 </div>
 
-                {/* Molecule */}
+                {/* Molecule — searchable combobox */}
                 <div className="space-y-2">
                     <Label>Molecule</Label>
-                    <Select
-                        onValueChange={(val) =>
-                            setValue('molecule_id', val === 'none' ? null : val)
-                        }
-                        defaultValue={watch('molecule_id') || 'none'}
-                    >
-                        <SelectTrigger className="bg-secondary/50">
-                            <SelectValue placeholder="Select molecule" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="none">— None —</SelectItem>
-                            {molecules.length === 0 && (
-                                <div className="px-3 py-2 text-xs text-muted-foreground">
-                                    No molecules.{' '}
-                                    <Link href="/molecules" className="text-primary underline" target="_blank">
-                                        Add molecules →
-                                    </Link>
-                                </div>
-                            )}
-                            {molecules.map((m) => (
-                                <SelectItem key={m.id} value={m.id}>
-                                    {m.name}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
+                    {molecules.length === 0 ? (
+                        <p className="text-xs text-muted-foreground pt-1">
+                            No molecules yet.{' '}
+                            <Link href="/molecules" className="text-primary underline" target="_blank">
+                                Add molecules →
+                            </Link>
+                        </p>
+                    ) : (
+                        <SearchableSelect
+                            options={moleculeOptions}
+                            value={watch('molecule_id')}
+                            onChange={(val) => setValue('molecule_id', val)}
+                            placeholder="— None —"
+                            searchPlaceholder="Search molecule…"
+                            emptyMessage="No molecule found."
+                        />
+                    )}
                 </div>
 
-                {/* Category */}
+                {/* Therapeutic Category — searchable combobox */}
                 <div className="space-y-2">
                     <Label>Therapeutic Category</Label>
-                    <Select
-                        onValueChange={(val) =>
-                            setValue('category_id', val === 'none' ? null : val)
-                        }
-                        defaultValue={watch('category_id') || 'none'}
-                    >
-                        <SelectTrigger className="bg-secondary/50">
-                            <SelectValue placeholder="Select category" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="none">— None —</SelectItem>
-                            {categories.length === 0 && (
-                                <div className="px-3 py-2 text-xs text-muted-foreground">
-                                    No categories.{' '}
-                                    <Link href="/categories" className="text-primary underline" target="_blank">
-                                        Add categories →
-                                    </Link>
-                                </div>
-                            )}
-                            {categories.map((c) => (
-                                <SelectItem key={c.id} value={c.id}>
-                                    {'—'.repeat((c.level || 1) - 1)} {c.name}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
+                    {categories.length === 0 ? (
+                        <p className="text-xs text-muted-foreground pt-1">
+                            No categories yet.{' '}
+                            <Link href="/categories" className="text-primary underline" target="_blank">
+                                Add categories →
+                            </Link>
+                        </p>
+                    ) : (
+                        <SearchableSelect
+                            options={categoryOptions}
+                            value={watch('category_id')}
+                            onChange={(val) => setValue('category_id', val)}
+                            placeholder="— None —"
+                            searchPlaceholder="Search category…"
+                            emptyMessage="No category found."
+                        />
+                    )}
                 </div>
 
                 {/* Dosage */}
@@ -161,30 +145,18 @@ export default function MedicationForm({ onSubmit, defaultValues, loading }) {
                     />
                 </div>
 
-                {/* Form */}
+                {/* Form — searchable combobox */}
                 <div className="space-y-2">
                     <Label>Form</Label>
-                    <Select
-                        onValueChange={(val) =>
-                            setValue('form', val === 'none' ? '' : val)
-                        }
-                        defaultValue={watch('form') || 'none'}
-                    >
-                        <SelectTrigger className="bg-secondary/50">
-                            <SelectValue placeholder="Select form" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="none">— None —</SelectItem>
-                            {MEDICATION_FORMS.map((f) => (
-                                <SelectItem key={f} value={f}>
-                                    {f}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
+                    <SearchableSelect
+                        options={formOptions}
+                        value={watch('form') || null}
+                        onChange={(val) => setValue('form', val || '')}
+                        placeholder="— None —"
+                        searchPlaceholder="Search form…"
+                        emptyMessage="No form found."
+                    />
                 </div>
-
-
             </div>
 
             {/* Notes */}

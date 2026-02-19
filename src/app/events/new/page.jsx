@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { DatePicker } from '@/components/ui/date-picker'
 import { ArrowLeft, Loader2 } from 'lucide-react'
 import Link from 'next/link'
 
@@ -20,6 +21,8 @@ export default function NewEventPage() {
     const {
         register,
         handleSubmit,
+        setValue,
+        watch,
         formState: { errors },
     } = useForm({
         resolver: zodResolver(eventSchema),
@@ -87,12 +90,12 @@ export default function NewEventPage() {
                                 )}
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="event_date">Event Date *</Label>
-                                <Input
-                                    id="event_date"
-                                    type="date"
-                                    {...register('event_date')}
-                                    className="bg-secondary/50"
+                                <Label>Event Date *</Label>
+                                <DatePicker
+                                    value={watch('event_date')}
+                                    onChange={(val) => setValue('event_date', val || '')}
+                                    placeholder="Select event date"
+                                    clearable={false}
                                 />
                                 {errors.event_date && (
                                     <p className="text-xs text-destructive">

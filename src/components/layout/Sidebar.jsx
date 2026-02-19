@@ -38,7 +38,7 @@ const navItems = [
     },
     {
         label: 'Batches',
-        href: '/batches/new',
+        href: '/batches',
         icon: Truck,
     },
     {

@@ -39,11 +39,9 @@ export const dispenseSchema = z.object({
     batch_id: z.string().uuid().optional().nullable(),
     event_id: z.string().uuid().optional().nullable(),
     dispensed_by: z.string().optional(),
-    patient_info: z.object({
-        name: z.string().optional(),
-        age: z.coerce.number().optional(),
-        notes: z.string().optional(),
-    }).optional().nullable(),
+    // Flat fields collected from the UI — assembled into patient_info JSONB in onSubmit
+    patient_age: z.coerce.number().int().min(0).max(130).optional().or(z.literal('')),
+    patient_complaint: z.string().optional(),
     notes: z.string().optional(),
 })
 
@@ -82,15 +80,15 @@ export const MEDICATION_FORMS = [
 // ── Helper: expiry status ───────────────────────────────
 
 export function getExpiryStatus(expirationDate) {
-    if (!expirationDate) return { label: 'No expiry', color: 'default' }
+    if (!expirationDate) return { label: 'No expiry', color: 'default', status: 'ok' }
     const now = new Date()
     const expiry = new Date(expirationDate)
     const diffDays = Math.ceil((expiry - now) / (1000 * 60 * 60 * 24))
 
-    if (diffDays < 0) return { label: 'Expired', color: 'destructive' }
-    if (diffDays <= 30) return { label: `${diffDays}d left`, color: 'destructive' }
-    if (diffDays <= 90) return { label: `${diffDays}d left`, color: 'warning' }
-    return { label: `${diffDays}d left`, color: 'default' }
+    if (diffDays < 0) return { label: 'Expired', color: 'destructive', status: 'expired' }
+    if (diffDays <= 7) return { label: `${diffDays}d left`, color: 'destructive', status: 'critical' }
+    if (diffDays <= 30) return { label: `${diffDays}d left`, color: 'warning', status: 'warning' }
+    return { label: `${diffDays}d left`, color: 'default', status: 'ok' }
 }
 
 export function formatDate(dateString) {

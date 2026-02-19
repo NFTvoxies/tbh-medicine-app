@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/select'
 import { ArrowLeft, Loader2 } from 'lucide-react'
 import Link from 'next/link'
+import { DatePicker } from '@/components/ui/date-picker'
 
 function NewBatchForm() {
     const router = useRouter()
@@ -34,6 +35,7 @@ function NewBatchForm() {
         register,
         handleSubmit,
         setValue,
+        watch,
         formState: { errors },
     } = useForm({
         resolver: zodResolver(batchSchema),
@@ -150,12 +152,13 @@ function NewBatchForm() {
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="expiration_date">Expiration Date</Label>
-                                <Input
-                                    id="expiration_date"
-                                    type="date"
-                                    {...register('expiration_date')}
-                                    className="bg-secondary/50"
+                                <Label>Expiration Date</Label>
+                                <DatePicker
+                                    value={watch('expiration_date') || null}
+                                    onChange={(val) => setValue('expiration_date', val || '')}
+                                    placeholder="Select expiry date"
+                                    fromYear={new Date().getFullYear()}
+                                    toYear={new Date().getFullYear() + 15}
                                 />
                             </div>
 

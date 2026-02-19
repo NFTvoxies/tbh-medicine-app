@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Loader2, Search, CheckCircle2, AlertCircle, X } from 'lucide-react'
+import { Loader2, Search, CheckCircle2, AlertCircle, X, ChevronDown, ChevronUp, User } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { formatDate, getExpiryStatus } from '@/lib/types'
 
@@ -30,6 +30,7 @@ export default function DispenseForm({ preselectedMedicationId }) {
     const [loading, setLoading] = useState(false)
     const [preloading, setPreloading] = useState(!!preselectedMedicationId)
     const [result, setResult] = useState(null) // { success, message }
+    const [showPatientInfo, setShowPatientInfo] = useState(false)
 
     const {
         register,
@@ -47,6 +48,8 @@ export default function DispenseForm({ preselectedMedicationId }) {
             event_id: null,
             dispensed_by: '',
             notes: '',
+            patient_age: '',
+            patient_complaint: '',
         },
     })
 
@@ -116,14 +119,25 @@ export default function DispenseForm({ preselectedMedicationId }) {
     async function onSubmit(data) {
         setLoading(true)
         setResult(null)
+        // Build patient_info from separate form fields
+        const patientAge = data.patient_age ? Number(data.patient_age) : undefined
+        const patientComplaint = data.patient_complaint || undefined
+        const patient_info =
+            patientAge || patientComplaint
+                ? { age: patientAge, complaint: patientComplaint }
+                : null
         try {
             const res = await fetch('/api/dispense', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    ...data,
+                    medication_id: data.medication_id,
+                    quantity_units: data.quantity_units,
                     batch_id: data.batch_id === 'auto' ? null : data.batch_id,
-                    patient_info: null,
+                    event_id: data.event_id,
+                    dispensed_by: data.dispensed_by,
+                    notes: data.notes,
+                    patient_info,
                 }),
             })
             const json = await res.json()
@@ -139,6 +153,8 @@ export default function DispenseForm({ preselectedMedicationId }) {
                 setValue('batch_id', null)
                 setValue('dispensed_by', '')
                 setValue('notes', '')
+                setValue('patient_age', '')
+                setValue('patient_complaint', '')
                 // Re-fetch batches to reflect new stock
                 fetch(`/api/batches?medication_id=${selectedMed.id}`)
                     .then((r) => r.json())
@@ -362,6 +378,46 @@ export default function DispenseForm({ preselectedMedicationId }) {
                     {...register('notes')}
                     className="bg-secondary/50 min-h-[60px]"
                 />
+            </div>
+
+            {/* Patient Info (collapsible) */}
+            <div className="rounded-lg border border-border overflow-hidden">
+                <button
+                    type="button"
+                    onClick={() => setShowPatientInfo((v) => !v)}
+                    className="w-full flex items-center justify-between px-4 py-2.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/30 transition-colors"
+                >
+                    <span className="flex items-center gap-2">
+                        <User className="w-4 h-4" />
+                        Patient Info <span className="text-xs font-normal">(optional)</span>
+                    </span>
+                    {showPatientInfo ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                </button>
+                {showPatientInfo && (
+                    <div className="px-4 pb-4 pt-2 border-t border-border grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="patient_age">Age</Label>
+                            <Input
+                                id="patient_age"
+                                type="number"
+                                min={0}
+                                max={130}
+                                placeholder="e.g. 45"
+                                {...register('patient_age')}
+                                className="bg-secondary/50"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="patient_complaint">Complaint / Reason</Label>
+                            <Input
+                                id="patient_complaint"
+                                placeholder="e.g. Headache, Fever"
+                                {...register('patient_complaint')}
+                                className="bg-secondary/50"
+                            />
+                        </div>
+                    </div>
+                )}
             </div>
 
             <Button

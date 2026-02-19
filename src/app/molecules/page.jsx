@@ -23,7 +23,16 @@ export default function MoleculesPage() {
         setFetching(false)
     }
 
-    useEffect(() => { load() }, [])
+    useEffect(() => {
+        async function fetchMolecules() {
+            setFetching(true)
+            const res = await fetch('/api/molecules')
+            const data = await res.json()
+            setMolecules(Array.isArray(data) ? data : [])
+            setFetching(false)
+        }
+        fetchMolecules()
+    }, [])
 
     async function handleAdd(e) {
         e.preventDefault()

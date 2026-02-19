@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import BatchList from '@/components/medications/BatchList'
-import { ArrowLeft, Pill, Plus, Syringe } from 'lucide-react'
+import { ArrowLeft, Pill, Plus, Syringe, Pencil } from 'lucide-react'
 import Link from 'next/link'
 import { getExpiryStatus } from '@/lib/types'
 
@@ -81,6 +81,11 @@ export default function MedicationDetailPage({ params }) {
                     </p>
                 </div>
                 <div className="flex gap-2">
+                    <Link href={`/medications/${id}/edit`}>
+                        <Button variant="outline" size="sm">
+                            <Pencil className="w-4 h-4 mr-1" /> Edit
+                        </Button>
+                    </Link>
                     <Link href={`/batches/new?medication_id=${id}`}>
                         <Button variant="outline" size="sm">
                             <Plus className="w-4 h-4 mr-1" /> Add Batch

@@ -14,7 +14,6 @@ import { Skeleton } from '@/components/ui/skeleton'
 import MedicationCard from '@/components/medications/MedicationCard'
 import { Search, Plus, Filter } from 'lucide-react'
 import Link from 'next/link'
-import { supabase } from '@/lib/supabaseClient'
 import { MEDICATION_FORMS } from '@/lib/types'
 
 export default function MedicationsPage() {
@@ -27,11 +26,13 @@ export default function MedicationsPage() {
     const [showFilters, setShowFilters] = useState(false)
 
     useEffect(() => {
-        supabase
-            .from('therapeutic_categories')
-            .select('*')
-            .order('name')
-            .then(({ data }) => setCategories(data || []))
+        async function loadData() {
+            const [catRes] = await Promise.all([
+                fetch('/api/categories').then((r) => r.json())
+            ])
+            setCategories(Array.isArray(catRes) ? catRes : [])
+        }
+        loadData()
     }, [])
 
     useEffect(() => {
