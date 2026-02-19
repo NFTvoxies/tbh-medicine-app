@@ -31,7 +31,6 @@ const donationFormSchema = z.object({
                 medication_id: z.string().min(1, 'Select a medication'),
                 quantity_units: z.coerce.number().int().min(1, 'Min 1'),
                 expiration_date: z.string().optional(),
-                box_count: z.coerce.number().int().min(0).default(0),
             })
         )
         .min(1, 'Add at least one batch'),
@@ -55,7 +54,7 @@ export default function NewDonationPage() {
             received_date: new Date().toISOString().split('T')[0],
             notes: '',
             batches: [
-                { medication_id: '', quantity_units: 1, expiration_date: '', box_count: 0 },
+                { medication_id: '', quantity_units: 1, expiration_date: '' },
             ],
         },
     })
@@ -87,7 +86,7 @@ export default function NewDonationPage() {
                         medication_id: b.medication_id,
                         quantity_units: b.quantity_units,
                         expiration_date: b.expiration_date || null,
-                        box_count: b.box_count || 0,
+                        box_count: b.quantity_units, // mirror: 1 unit = 1 box
                     })),
                 }),
             })
@@ -174,7 +173,6 @@ export default function NewDonationPage() {
                                     medication_id: '',
                                     quantity_units: 1,
                                     expiration_date: '',
-                                    box_count: 0,
                                 })
                             }
                         >
@@ -235,13 +233,14 @@ export default function NewDonationPage() {
                                         )}
                                     </div>
                                     <div className="space-y-1.5">
-                                        <Label className="text-xs">Quantity (units) *</Label>
+                                        <Label className="text-xs">Number of Boxes *</Label>
                                         <Input
                                             type="number"
                                             min={1}
                                             {...register(`batches.${index}.quantity_units`)}
                                             className="bg-secondary/50"
                                         />
+                                        <p className="text-[10px] text-muted-foreground">Each box = 1 dispensable unit</p>
                                     </div>
                                     <div className="space-y-1.5">
                                         <Label className="text-xs">Expiration Date</Label>
@@ -251,15 +250,7 @@ export default function NewDonationPage() {
                                             className="bg-secondary/50"
                                         />
                                     </div>
-                                    <div className="space-y-1.5">
-                                        <Label className="text-xs">Box Count</Label>
-                                        <Input
-                                            type="number"
-                                            min={0}
-                                            {...register(`batches.${index}.box_count`)}
-                                            className="bg-secondary/50"
-                                        />
-                                    </div>
+
                                 </div>
                             </div>
                         ))}

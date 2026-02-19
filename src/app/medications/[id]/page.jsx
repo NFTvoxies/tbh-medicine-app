@@ -100,17 +100,15 @@ export default function MedicationDetailPage({ params }) {
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
                         <div>
                             <p className="text-3xl font-bold text-primary">{totalUnits}</p>
-                            <p className="text-xs text-muted-foreground mt-1">Total Units</p>
+                            <p className="text-xs text-muted-foreground mt-1">Boxes in Stock</p>
                         </div>
                         <div>
                             <p className="text-3xl font-bold">{activeBatches.length}</p>
                             <p className="text-xs text-muted-foreground mt-1">Active Batches</p>
                         </div>
                         <div>
-                            <p className="text-3xl font-bold">
-                                {medication.units_per_box || 1}
-                            </p>
-                            <p className="text-xs text-muted-foreground mt-1">Units/Box</p>
+                            <p className="text-3xl font-bold">{batches.length}</p>
+                            <p className="text-xs text-muted-foreground mt-1">Total Batches</p>
                         </div>
                         <div>
                             <p className="text-l font-bold">

@@ -37,7 +37,6 @@ export default function MedicationForm({ onSubmit, defaultValues, loading }) {
             category_id: null,
             dosage: '',
             form: '',
-            units_per_box: 1,
             notes: '',
         },
     })
@@ -185,17 +184,7 @@ export default function MedicationForm({ onSubmit, defaultValues, loading }) {
                     </Select>
                 </div>
 
-                {/* Units per box */}
-                <div className="space-y-2">
-                    <Label htmlFor="units_per_box">Units per Box</Label>
-                    <Input
-                        id="units_per_box"
-                        type="number"
-                        min={1}
-                        {...register('units_per_box')}
-                        className="bg-secondary/50"
-                    />
-                </div>
+
             </div>
 
             {/* Notes */}

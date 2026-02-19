@@ -16,17 +16,19 @@ import {
     SelectValue,
 } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
-import { Loader2, Search, CheckCircle2, AlertCircle } from 'lucide-react'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Loader2, Search, CheckCircle2, AlertCircle, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { formatDate, getExpiryStatus } from '@/lib/types'
 
-export default function DispenseForm() {
+export default function DispenseForm({ preselectedMedicationId }) {
     const [medications, setMedications] = useState([])
     const [events, setEvents] = useState([])
     const [batches, setBatches] = useState([])
     const [search, setSearch] = useState('')
     const [selectedMed, setSelectedMed] = useState(null)
     const [loading, setLoading] = useState(false)
+    const [preloading, setPreloading] = useState(!!preselectedMedicationId)
     const [result, setResult] = useState(null) // { success, message }
 
     const {
@@ -48,15 +50,30 @@ export default function DispenseForm() {
         },
     })
 
-    // Load events on mount
+    // ── Auto-preselect medication from URL param ──────────────────────
+    useEffect(() => {
+        if (!preselectedMedicationId) return
+        setPreloading(true)
+        fetch(`/api/medications/${preselectedMedicationId}`)
+            .then((r) => r.json())
+            .then((data) => {
+                if (data?.medication) {
+                    selectMedication(data.medication)
+                }
+            })
+            .finally(() => setPreloading(false))
+    }, [preselectedMedicationId])
+
+    // ── Load events on mount ──────────────────────────────────────────
     useEffect(() => {
         fetch('/api/events')
             .then((r) => r.json())
             .then((data) => setEvents(Array.isArray(data) ? data : []))
     }, [])
 
-    // Search medications via API (bypasses RLS)
+    // ── Search medications (only when no preselection) ────────────────
     useEffect(() => {
+        if (preselectedMedicationId) return // skip search when pre-selected
         if (search.length < 2) {
             setMedications([])
             return
@@ -67,9 +84,9 @@ export default function DispenseForm() {
             setMedications(Array.isArray(data) ? data.slice(0, 10) : [])
         }, 300)
         return () => clearTimeout(timer)
-    }, [search])
+    }, [search, preselectedMedicationId])
 
-    // Load batches when medication selected via API (bypasses RLS)
+    // ── Load batches when medication selected ─────────────────────────
     useEffect(() => {
         if (!selectedMed) {
             setBatches([])
@@ -85,6 +102,15 @@ export default function DispenseForm() {
         setValue('medication_id', med.id)
         setSearch(med.brand_name)
         setMedications([])
+    }
+
+    function clearMedication() {
+        // Only allowed when NOT coming from a preselected context
+        if (preselectedMedicationId) return
+        setSelectedMed(null)
+        setValue('medication_id', '')
+        setSearch('')
+        setBatches([])
     }
 
     async function onSubmit(data) {
@@ -106,12 +132,17 @@ export default function DispenseForm() {
             } else {
                 setResult({
                     success: true,
-                    message: `Dispensed ${data.quantity_units} units successfully!`,
+                    message: `Dispensed ${data.quantity_units} box${data.quantity_units > 1 ? 'es' : ''} successfully!`,
                 })
-                reset()
-                setSelectedMed(null)
-                setSearch('')
-                setBatches([])
+                // Reset quantity & batch but keep the selected medication
+                setValue('quantity_units', 1)
+                setValue('batch_id', null)
+                setValue('dispensed_by', '')
+                setValue('notes', '')
+                // Re-fetch batches to reflect new stock
+                fetch(`/api/batches?medication_id=${selectedMed.id}`)
+                    .then((r) => r.json())
+                    .then((data) => setBatches(Array.isArray(data) ? data.filter((b) => b.quantity_units > 0) : []))
             }
         } catch (err) {
             setResult({ success: false, message: 'Network error, please try again.' })
@@ -124,6 +155,20 @@ export default function DispenseForm() {
         (sum, b) => sum + (b.quantity_units || 0),
         0
     )
+
+    // ── Preloading state ──────────────────────────────────────────────
+    if (preloading) {
+        return (
+            <div className="space-y-4">
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-16 w-full rounded-lg" />
+                <div className="grid grid-cols-2 gap-4">
+                    <Skeleton className="h-10" />
+                    <Skeleton className="h-10" />
+                </div>
+            </div>
+        )
+    }
 
     return (
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -146,49 +191,60 @@ export default function DispenseForm() {
                 </div>
             )}
 
-            {/* Medication search */}
-            <div className="space-y-2">
-                <Label>Search Medication *</Label>
-                <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                    <Input
-                        placeholder="Type brand name or DCI..."
-                        value={search}
-                        onChange={(e) => {
-                            setSearch(e.target.value)
-                            setSelectedMed(null)
-                        }}
-                        className="pl-9 bg-secondary/50"
-                    />
-                </div>
-                {errors.medication_id && (
-                    <p className="text-xs text-destructive">
-                        {errors.medication_id.message}
-                    </p>
-                )}
-                {/* Search results dropdown */}
-                {medications.length > 0 && !selectedMed && (
-                    <div className="rounded-lg border border-border bg-card p-1 space-y-0.5 max-h-[200px] overflow-y-auto">
-                        {medications.map((med) => (
+            {/* Medication search — hidden when pre-selected from context */}
+            {!preselectedMedicationId && (
+                <div className="space-y-2">
+                    <Label>Search Medication *</Label>
+                    <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                        <Input
+                            placeholder="Type brand name or DCI..."
+                            value={search}
+                            onChange={(e) => {
+                                setSearch(e.target.value)
+                                setSelectedMed(null)
+                            }}
+                            className="pl-9 bg-secondary/50"
+                        />
+                        {selectedMed && (
                             <button
                                 type="button"
-                                key={med.id}
-                                onClick={() => selectMedication(med)}
-                                className="w-full text-left px-3 py-2 rounded-md hover:bg-secondary/50 transition-smooth"
+                                onClick={clearMedication}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                             >
-                                <span className="text-sm font-medium">{med.brand_name}</span>
-                                <span className="text-xs text-muted-foreground ml-2">
-                                    {med.generic_name}
-                                    {med.dosage ? ` · ${med.dosage}` : ''}
-                                    {med.form ? ` · ${med.form}` : ''}
-                                </span>
+                                <X className="w-4 h-4" />
                             </button>
-                        ))}
+                        )}
                     </div>
-                )}
-            </div>
+                    {errors.medication_id && (
+                        <p className="text-xs text-destructive">
+                            {errors.medication_id.message}
+                        </p>
+                    )}
+                    {/* Search results dropdown */}
+                    {medications.length > 0 && !selectedMed && (
+                        <div className="rounded-lg border border-border bg-card p-1 space-y-0.5 max-h-[200px] overflow-y-auto">
+                            {medications.map((med) => (
+                                <button
+                                    type="button"
+                                    key={med.id}
+                                    onClick={() => selectMedication(med)}
+                                    className="w-full text-left px-3 py-2 rounded-md hover:bg-secondary/50 transition-smooth"
+                                >
+                                    <span className="text-sm font-medium">{med.brand_name}</span>
+                                    <span className="text-xs text-muted-foreground ml-2">
+                                        {med.generic_name}
+                                        {med.dosage ? ` · ${med.dosage}` : ''}
+                                        {med.form ? ` · ${med.form}` : ''}
+                                    </span>
+                                </button>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            )}
 
-            {/* Selected medication info */}
+            {/* Selected medication info — always shown when a med is selected */}
             {selectedMed && (
                 <div className="rounded-lg bg-primary/5 border border-primary/20 px-4 py-3">
                     <div className="flex items-center justify-between">
@@ -202,8 +258,14 @@ export default function DispenseForm() {
                                 {selectedMed.form ? ` · ${selectedMed.form}` : ''}
                             </p>
                         </div>
-                        <Badge variant="secondary" className="font-semibold">
-                            {totalAvailable} units available
+                        <Badge
+                            variant="secondary"
+                            className={cn(
+                                'font-semibold',
+                                totalAvailable === 0 && 'text-destructive border-destructive/30'
+                            )}
+                        >
+                            {totalAvailable} {totalAvailable === 1 ? 'box' : 'boxes'} available
                         </Badge>
                     </div>
                 </div>
@@ -221,6 +283,7 @@ export default function DispenseForm() {
                         {...register('quantity_units')}
                         className="bg-secondary/50"
                     />
+                    <p className="text-xs text-muted-foreground">Number of boxes to give</p>
                     {errors.quantity_units && (
                         <p className="text-xs text-destructive">
                             {errors.quantity_units.message}
@@ -246,7 +309,7 @@ export default function DispenseForm() {
                                 const status = getExpiryStatus(b.expiration_date)
                                 return (
                                     <SelectItem key={b.id} value={b.id}>
-                                        {b.quantity_units} units · Exp: {formatDate(b.expiration_date)}{' '}
+                                        {b.quantity_units} boxes · Exp: {formatDate(b.expiration_date)}{' '}
                                         ({status.label})
                                     </SelectItem>
                                 )
@@ -303,12 +366,17 @@ export default function DispenseForm() {
 
             <Button
                 type="submit"
-                disabled={loading || !selectedMed}
+                disabled={loading || !selectedMed || totalAvailable === 0}
                 className="w-full md:w-auto"
             >
                 {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
                 Dispense Medication
             </Button>
+            {totalAvailable === 0 && selectedMed && (
+                <p className="text-xs text-destructive mt-1">
+                    No stock available for this medication.
+                </p>
+            )}
         </form>
     )
 }

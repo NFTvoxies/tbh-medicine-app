@@ -41,7 +41,6 @@ function NewBatchForm() {
             medication_id: preselectedMed || '',
             quantity_units: 1,
             expiration_date: '',
-            box_count: 0,
             donation_id: null,
             location_id: null,
         },
@@ -134,7 +133,7 @@ function NewBatchForm() {
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="quantity_units">Quantity (units) *</Label>
+                                <Label htmlFor="quantity_units">Number of Boxes *</Label>
                                 <Input
                                     id="quantity_units"
                                     type="number"
@@ -142,6 +141,7 @@ function NewBatchForm() {
                                     {...register('quantity_units')}
                                     className="bg-secondary/50"
                                 />
+                                <p className="text-xs text-muted-foreground">Each box = 1 dispensable unit</p>
                                 {errors.quantity_units && (
                                     <p className="text-xs text-destructive">
                                         {errors.quantity_units.message}
@@ -159,16 +159,6 @@ function NewBatchForm() {
                                 />
                             </div>
 
-                            <div className="space-y-2">
-                                <Label htmlFor="box_count">Box Count</Label>
-                                <Input
-                                    id="box_count"
-                                    type="number"
-                                    min={0}
-                                    {...register('box_count')}
-                                    className="bg-secondary/50"
-                                />
-                            </div>
 
                             {locations.length > 0 && (
                                 <div className="space-y-2">

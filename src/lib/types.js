@@ -9,7 +9,6 @@ export const medicationSchema = z.object({
     category_id: z.string().uuid().optional().nullable(),
     dosage: z.string().optional(),
     form: z.string().optional(),
-    units_per_box: z.coerce.number().int().min(1).default(1),
     notes: z.string().optional(),
 })
 
@@ -19,7 +18,6 @@ export const batchSchema = z.object({
     location_id: z.string().uuid().optional().nullable(),
     expiration_date: z.string().optional(),
     quantity_units: z.coerce.number().int().min(1, 'Quantity must be at least 1'),
-    box_count: z.coerce.number().int().min(0).default(0),
 })
 
 export const donationSchema = z.object({
