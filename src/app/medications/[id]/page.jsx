@@ -59,20 +59,20 @@ export default function MedicationDetailPage({ params }) {
     return (
         <div className="max-w-4xl mx-auto space-y-6">
             {/* Header */}
-            <div className="flex items-center gap-3">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                 <Link href="/medications">
                     <Button variant="ghost" size="icon">
                         <ArrowLeft className="w-4 h-4" />
                     </Button>
                 </Link>
-                <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                        <h1 className="text-2xl font-bold tracking-tight">
+                <div className="flex-1 min-w-0">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                        <h1 className="text-2xl font-bold tracking-tight truncate">
                             {medication.brand_name}
                         </h1>
-                        <Badge variant="secondary">{medication.form || 'N/A'}</Badge>
+                        <Badge variant="secondary" className="w-fit">{medication.form || 'N/A'}</Badge>
                     </div>
-                    <p className="text-sm text-muted-foreground mt-0.5">
+                    <p className="text-sm text-muted-foreground mt-0.5 truncate">
                         {medication.generic_name}
                         {medication.molecules?.name
                             ? ` (${medication.molecules.name})`
@@ -80,19 +80,19 @@ export default function MedicationDetailPage({ params }) {
                         {medication.dosage ? ` · ${medication.dosage}` : ''}
                     </p>
                 </div>
-                <div className="flex gap-2">
-                    <Link href={`/medications/${id}/edit`}>
-                        <Button variant="outline" size="sm">
+                <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                    <Link href={`/medications/${id}/edit`} className="flex-1 sm:flex-none">
+                        <Button variant="outline" size="sm" className="w-full sm:w-auto">
                             <Pencil className="w-4 h-4 mr-1" /> Edit
                         </Button>
                     </Link>
-                    <Link href={`/batches/new?medication_id=${id}`}>
-                        <Button variant="outline" size="sm">
+                    <Link href={`/batches/new?medication_id=${id}`} className="flex-1 sm:flex-none">
+                        <Button variant="outline" size="sm" className="w-full sm:w-auto">
                             <Plus className="w-4 h-4 mr-1" /> Add Batch
                         </Button>
                     </Link>
-                    <Link href={`/dispense?medication=${id}`}>
-                        <Button size="sm">
+                    <Link href={`/dispense?medication=${id}`} className="flex-1 sm:flex-none">
+                        <Button size="sm" className="w-full sm:w-auto">
                             <Syringe className="w-4 h-4 mr-1" /> Dispense
                         </Button>
                     </Link>

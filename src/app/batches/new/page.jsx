@@ -18,6 +18,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select'
+import { SearchableSelect } from '@/components/ui/searchable-select'
 import { ArrowLeft, Loader2 } from 'lucide-react'
 import Link from 'next/link'
 import { DatePicker } from '@/components/ui/date-picker'
@@ -59,7 +60,11 @@ function NewBatchForm() {
             .select('*')
             .order('name')
             .then(({ data }) => setLocations(data || []))
-    }, [])
+        // Set preselected medication if provided
+        if (preselectedMed) {
+            setValue('medication_id', preselectedMed)
+        }
+    }, [preselectedMed, setValue])
 
     async function onSubmit(data) {
         setLoading(true)
@@ -111,22 +116,18 @@ function NewBatchForm() {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <Label>Medication *</Label>
-                                <Select
-                                    defaultValue={preselectedMed || undefined}
-                                    onValueChange={(val) => setValue('medication_id', val)}
-                                >
-                                    <SelectTrigger className="bg-secondary/50">
-                                        <SelectValue placeholder="Select medication" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {medications.map((m) => (
-                                            <SelectItem key={m.id} value={m.id}>
-                                                {m.brand_name} – {m.generic_name}
-                                                {m.dosage ? ` (${m.dosage})` : ''}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
+                                <SearchableSelect
+                                    options={medications.map((m) => ({
+                                        value: m.id,
+                                        label: `${m.brand_name} – ${m.generic_name}${m.dosage ? ` (${m.dosage})` : ''}`
+                                    }))}
+                                    value={watch('medication_id') || null}
+                                    onChange={(val) => setValue('medication_id', val || '')}
+                                    placeholder="Select medication"
+                                    searchPlaceholder="Search medications..."
+                                    emptyMessage="No medications found."
+                                    clearable={false}
+                                />
                                 {errors.medication_id && (
                                     <p className="text-xs text-destructive">
                                         {errors.medication_id.message}

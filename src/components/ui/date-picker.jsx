@@ -91,7 +91,7 @@ export function DatePicker({
                     selected={validDate}
                     onSelect={handleSelect}
                     initialFocus
-                    captionLayout="dropdown-buttons"
+                    captionLayout="dropdown"
                     fromYear={fromYear}
                     toYear={toYear}
                 />

@@ -28,7 +28,7 @@ export default function BatchList({ batches = [] }) {
             <Table>
                 <TableHeader>
                     <TableRow className="bg-secondary/30 hover:bg-secondary/30">
-                        <TableHead className="text-xs">Batch ID</TableHead>
+                        {/* <TableHead className="text-xs">Batch ID</TableHead> */}
                         <TableHead className="text-xs">Quantity</TableHead>
                         <TableHead className="text-xs">Expiry Date</TableHead>
                         <TableHead className="text-xs">Status</TableHead>
@@ -40,9 +40,9 @@ export default function BatchList({ batches = [] }) {
                         const status = getExpiryStatus(batch.expiration_date)
                         return (
                             <TableRow key={batch.id} className="hover:bg-secondary/20">
-                                <TableCell className="text-xs font-mono text-muted-foreground">
+                                {/* <TableCell className="text-xs font-mono text-muted-foreground">
                                     {batch.id?.slice(0, 8)}…
-                                </TableCell>
+                                </TableCell> */}
                                 <TableCell>
                                     <span
                                         className={cn(
