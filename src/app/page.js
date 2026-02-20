@@ -10,20 +10,20 @@ import { Skeleton } from '@/components/ui/skeleton'
 
 export default function DashboardPage() {
   const [medications, setMedications] = useState([])
-  const [events, setEvents] = useState([])
+  const [donations, setDonations] = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     async function load() {
       try {
-        const [medRes, evtRes] = await Promise.all([
+        const [medRes, donationRes] = await Promise.all([
           fetch('/api/medications'),
           fetch('/api/donations'),
         ])
         const medData = await medRes.json()
         setMedications(Array.isArray(medData) ? medData : [])
-        const evtData = await evtRes.json()
-        setEvents(Array.isArray(evtData) ? evtData : [])
+        const donationData = await donationRes.json()
+        setDonations(Array.isArray(donationData) ? donationData : [])
       } catch (err) {
         console.error('Dashboard load error:', err)
       } finally {
@@ -86,7 +86,7 @@ export default function DashboardPage() {
         />
         <StatCard
           title="Total Donations"
-          value={events.length}
+          value={donations.length}
           subtitle="Inbound records"
           icon={Package}
         />

@@ -10,6 +10,7 @@ import {
     Truck,
     Calendar,
     Syringe,
+    ClipboardList,
     ChevronLeft,
     ChevronRight,
     Heart,
@@ -50,6 +51,11 @@ const navItems = [
         label: 'Dispense',
         href: '/dispense',
         icon: Syringe,
+    },
+    {
+        label: 'History',
+        href: '/dispenses',
+        icon: ClipboardList,
     },
     {
         label: 'Molecules',
